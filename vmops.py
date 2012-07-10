@@ -19,13 +19,9 @@ from pysphere import VIServer
 
 class Vmops:
  client=None
- server=None
  def connect(self,server_name,userid, password):
     self.client=Client(server_name,userid,password)
 
- def connectVIServer(self,server_name,userid, password):
-     self.server=VIServer()
-     self.server.connect(server_name,userid,password)
 
  def cloneMachine(self,source_vm_name, dest_vm_name):
 
@@ -81,28 +77,6 @@ class Vmops:
 
 
 
- def startVm(self,vmname):
-     vm=self.server.get_vm_by_name(vmname)
-     status=vm.get_status()
-     if status=="POWERED OFF":
-         vm.power_on()
-
-
- def stopVm(self, vmname):
-     vm=self.server.get_vm_by_name(vmname)
-     status=vm.get_status()
-     if status=="POWERED ON":
-         vm.power_off()
-
- def stopGuest(self,vmname):
-      vm=self.server.get_vm_by_name(vmname)
-      vm.shutdown_guest()
-
- def rebootGuest(self,vmname):
-     vm=self.server.get_vm_by_name(vmname)
-     vm.reboot_guest()
-
-
  def changevmConfig(self,vm_name,cpuCount):
     try:
      new_config = self.client.create("VirtualMachineConfigSpec")
@@ -134,8 +108,35 @@ class Vmops:
      print("ERROR: No VM found with name %s" % vm_name)
 
 
- def closeconnection():
-     client.logout()
+ def changevmMemory(self,vm_name,memory):
+     try:
+         new_config = self.client.create("VirtualMachineConfigSpec")
+         new_config.memoryMB = memory
+         vm = VirtualMachine.get(self.client, name=vm_name)
+         print("Reconfiguring %s" % vm_name)
+         if vm.config.hardware.numCPU == cpuCount:
+             print("Not reconfiguring %s as it already has %s memory" % (vm_name,memory))
+             sys.exit()
+         task = vm.ReconfigVM_Task(spec=new_config)
+         while task.info.state in ["queued", "running"]:
+             print("Waiting 5 more seconds for VM creation")
+             time.sleep(5)
+             task.update()
+
+         if task.info.state == "success":
+             elapsed_time = task.info.completeTime - task.info.startTime
+             print("Successfully reconfigured VM %s. Server took %s seconds." %
+                   (vm_name, elapsed_time.seconds))
+         elif task.info.state == "error":
+             print("ERROR: The task for reconfiguring the VM has finished with"
+                   " an error. If an error was reported it will follow.")
+             print("ERROR: %s" % task.info.error.localizedMessage)
+     except VimFault, e:
+         print("Failed to reconfigure %s: " % e)
+         sys.exit()
+     except ObjectNotFoundError:
+         print("ERROR: No VM found with name %s" % vm_name)
+
 
 
 source_vm_name = "Chef Node"
@@ -145,9 +146,9 @@ x=Vmops()
 x.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
 x.connect("69.33.0.216","vpxuser","Tubuai123!")
 x.stopVm(source_vm_name)
-x.changevmConfig(source_vm_name,2)
-#x.cloneMachine(source_vm_name,dest_vm_name)
-x.startVm(source_vm_name)
+x.changevmMemory(source_vm_name,2096)
+x.cloneMachine(source_vm_name,dest_vm_name)
+#x.startVm(source_vm_name)
 
 #x.stopGuest(source_vm_name)
 #x.rebootGuest(source_vm_name)
