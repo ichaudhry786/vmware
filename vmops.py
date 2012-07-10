@@ -14,7 +14,7 @@ from psphere.errors import ObjectNotFoundError
 from psphere.client import Client
 from psphere.soap import VimFault
 from psphere.managedobjects import VirtualMachine
-from pysphere import VIServer
+from basicOps import basicOps
 
 
 class Vmops:
@@ -114,12 +114,12 @@ class Vmops:
          new_config.memoryMB = memory
          vm = VirtualMachine.get(self.client, name=vm_name)
          print("Reconfiguring %s" % vm_name)
-         if vm.config.hardware.numCPU == cpuCount:
+         if vm.config.hardware.memoryMB== vm_name:
              print("Not reconfiguring %s as it already has %s memory" % (vm_name,memory))
              sys.exit()
          task = vm.ReconfigVM_Task(spec=new_config)
          while task.info.state in ["queued", "running"]:
-             print("Waiting 5 more seconds for VM creation")
+             print("Waiting 5 more seconds for VM starting")
              time.sleep(5)
              task.update()
 
@@ -143,12 +143,13 @@ source_vm_name = "Chef Node"
 dest_vm_name = "Chef Node Clone"
 
 x=Vmops()
-x.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
+y=basicOps()
+y.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
 x.connect("69.33.0.216","vpxuser","Tubuai123!")
-x.stopVm(source_vm_name)
+y.stopVm(source_vm_name)
 x.changevmMemory(source_vm_name,2096)
-x.cloneMachine(source_vm_name,dest_vm_name)
-#x.startVm(source_vm_name)
+#x.cloneMachine(source_vm_name,dest_vm_name)
+y.startVm(source_vm_name)
 
 #x.stopGuest(source_vm_name)
 #x.rebootGuest(source_vm_name)
