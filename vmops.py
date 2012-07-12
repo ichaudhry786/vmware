@@ -15,33 +15,49 @@ from psphere.client import Client
 from psphere.soap import VimFault
 from psphere.managedobjects import VirtualMachine
 from basicOps import basicOps
-
+from config import Config
 
 class Vmops:
  client=None
- def connect(self,server_name,userid, password):
-    self.client=Client(server_name,userid,password)
+ def connect(self):
+     configuration=Config()
+     server = configuration._config_value("general", "server")
+     if server is None:
+         raise ValueError("server must be supplied on command line"+"or in configuration file.")
+     username = configuration._config_value("general", "username")
+     if username is None:
+         raise ValueError("username must be supplied on command line"
+                      " or in configuration file.")
+     password = configuration._config_value("general", "password")
+     if password is None:
+         raise ValueError("password must be supplied on command line"
+                      " or in configuration file.")
+
+     self.client=Client(server,username,password)
 
 
  def cloneMachine(self,source_vm_name, dest_vm_name):
 
     try:
-        vm = VirtualMachine.get(self.client, name=source_vm_name)
+        #vm = VirtualMachine.get(self.client, name=source_vm_name)
+
         #f vm.name == dest_vm_name:
          #   print("ERROR: Destination VM \"%s\" already exists." % dest_vm_name)
           #  client.logout()
           #  sys.exit(1)
         #vm.parent # Datacenter folder
+        vm = self.client.find_entity_view("VirtualMachine",filter={"name": source_vm_name})
+        print(vm.name)
 
         vm_clone_spec = self.client.create("VirtualMachineCloneSpec")
         vm_reloc_spec = self.client.create("VirtualMachineRelocateSpec")
-        vm_reloc_spec.datastore = vm.datastore
-        vm_reloc_spec.host = None
+   #     vm_reloc_spec.datastore = 'DEV-datastore-01-930GB-MD3200'
+
         vm_reloc_spec.transform = None
-
-
-        vm_reloc_spec.pool = vm.resourcePool
-
+        target = self.client.find_entity_view("HostSystem", filter={"name": "192.168.3.107"})
+ #       resource_pool = target.parent.resourcePool
+  #      vm_reloc_spec.pool = resource_pool
+        vm_reloc_spec.host = target
         vm_clone_spec.powerOn = True
         vm_clone_spec.template = False
         vm_clone_spec.location = vm_reloc_spec
@@ -142,17 +158,18 @@ class Vmops:
 source_vm_name = "Chef Node"
 dest_vm_name = "Chef Node Clone"
 
-x=Vmops()
+#x=Vmops()
 y=basicOps()
-y.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
-x.connect("69.33.0.216","vpxuser","Tubuai123!")
-y.stopVm(source_vm_name)
-x.changevmMemory(source_vm_name,2096)
+#y.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
+#x.connect()
+#y.stopVm(source_vm_name)
+#x.changevmMemory(source_vm_name,2096)
 #x.cloneMachine(source_vm_name,dest_vm_name)
-y.startVm(source_vm_name)
+y.connect()
+#y.stopVm(source_vm_name)
 
 #x.stopGuest(source_vm_name)
 #x.rebootGuest(source_vm_name)
-
+y.clone(source_vm_name)
 
 #x.closeconnection()
