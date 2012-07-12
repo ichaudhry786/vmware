@@ -1,0 +1,7 @@
+general:
+    server: 69.33.0.216
+    username: vpxuser
+    password: Tubuai123!
+logging:
+    destination: ~/.psphere/psphere.log
+    level: INFO # DEBUG, INFO, etc
