@@ -153,23 +153,28 @@ class Vmops:
      except ObjectNotFoundError:
          print("ERROR: No VM found with name %s" % vm_name)
 
+# def getResourcePool(self):
+     #pools=self.client.find_entity_view("ResourcePool",filter={"name": "Customs-Dev-vDC"})
+     #print(pools)
 
 
 source_vm_name = "Chef Node"
 dest_vm_name = "Chef Node Clone"
 
-#x=Vmops()
+x=Vmops()
 y=basicOps()
+
+
 #y.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
-#x.connect()
+x.connect()
 #y.stopVm(source_vm_name)
 #x.changevmMemory(source_vm_name,2096)
 #x.cloneMachine(source_vm_name,dest_vm_name)
 y.connect()
 #y.stopVm(source_vm_name)
-
+#x.getResourcePool()
 #x.stopGuest(source_vm_name)
 #x.rebootGuest(source_vm_name)
-y.clone(source_vm_name)
+y.getResourceList(cluster="Development Cluster",resourcePool="Customs-Prod-vDC")
 
 #x.closeconnection()
