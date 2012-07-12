@@ -57,7 +57,7 @@ class basicOps:
         vm=self.server.get_vm_by_name(vmname)
         vm.reboot_guest()
 
-    def clone(self,vmname,cluster=None, datacenter=None, resourcePool=None):
+    def clone(self,vmname):
         vm=self.server.get_vm_by_name(vmname)
         resource_pools=self.server.get_resource_pools()
         arp=resource_pools.keys()[0]
