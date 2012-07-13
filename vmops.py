@@ -16,6 +16,7 @@ from psphere.soap import VimFault
 from psphere.managedobjects import VirtualMachine
 from basicOps import basicOps
 from config import Config
+from utility import Utility
 
 class Vmops:
  client=None
@@ -158,23 +159,25 @@ class Vmops:
      #print(pools)
 
 
-source_vm_name = "Chef Node"
+source_vm_name = "Chef Node Template"
 dest_vm_name = "Chef Node Clone"
 
-x=Vmops()
+#x=Vmops()
 y=basicOps()
 
 
 #y.connectVIServer("69.33.0.216","vpxuser","Tubuai123!")
-x.connect()
+#x.connect()
 #y.stopVm(source_vm_name)
 #x.changevmMemory(source_vm_name,2096)
 #x.cloneMachine(source_vm_name,dest_vm_name)
-y.connect()
+#y.connect()
+#y.clone(source_vm_name,"Development Cluster","Customs-Prod-vDC",cloneName="Chef Node Clone 2")
 #y.stopVm(source_vm_name)
-#x.getResourcePool()
+#x.getResourcePoole
 #x.stopGuest(source_vm_name)
 #x.rebootGuest(source_vm_name)
-y.getResourceList(cluster="Development Cluster",resourcePool="Customs-Prod-vDC")
-
+#y.getResourceList(cluster="Development Cluster",resourcePool="Customs-Prod-vDC")
+x=Utility()
+x.showmain()
 #x.closeconnection()
