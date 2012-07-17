@@ -41,41 +41,72 @@ class basicOps:
         vm=self.server.get_vm_by_name(vmname)
         status=vm.get_status()
         if status=="POWERED OFF":
-            vm.power_on()
+            task=vm.power_on(run_sync=False)
+            return task
 
     def stopVm(self, vmname):
         vm=self.server.get_vm_by_name(vmname)
         status=vm.get_status()
         if status=="POWERED ON":
-            vm.power_off()
+            task=vm.power_off(run_sync=False)
+            return task
+
 
     def stopGuest(self,vmname):
         vm=self.server.get_vm_by_name(vmname)
-        vm.shutdown_guest()
+        task=vm.shutdown_guest(run_sync=False)
+        return task
 
     def rebootGuest(self,vmname):
         vm=self.server.get_vm_by_name(vmname)
-        vm.reboot_guest()
+        task=vm.reboot_guest(run_sync=False)
+        return task
 
-    def clone(self,vmname):
-        vm=self.server.get_vm_by_name(vmname)
-        resource_pools=self.server.get_resource_pools()
-        arp=resource_pools.keys()[0]
-        new_vm=vm.clone("Chef node Clone",resourcepool=arp)
+    def getDataCenters(self):
+        return self.server.get_datacenters()
 
-    def getResourceList(self, cluster=None, datacenter=None, resourcePool=None):
-         if datacenter==None and cluster==None:
-            resource_pools=self.server.get_resource_pools()
-         elif (datacenter==None and cluster !=None):
-            clusters=self.server.get_clusters()
-            print clusters
-            keycluster=self.find_key(clusters,cluster)
-            print(keycluster)
-            resource_pools=self.server.get_resource_pools(keycluster)
-            print(resource_pools)
-            resourcePool=self.find_key(resource_pools,resourcePool,True)
-            print(resourcePool)
+    def clone(self,templateName,cloneName="Template Clone"):
+        vm=self.server.get_vm_by_name(templateName)
+        resourcePool=self.getResourcePool()
+        print resourcePool
+        task=vm.clone(cloneName,resourcepool=resourcePool,sync_run=False)
+        try:
+            status=task.get_state()
+            print(status)
+            print "Creating machine from template:Job Status:" + status
+            if  status!="error":
+              while (status!="success" or status !="error"):
+                  status=task.get_state()
+                  if  status=="success":
+                   break;
+            print "Creating machine from template: Job Status:" + status
+            #vm_new=self.server.get_vm_by_name(cloneName)
+            #return vm_new
+        except:
+            print("Error Occured:")
 
+
+    def getResourcePool(self):
+
+        configuration=Config()
+        datacenter = configuration._config_value("vmware", "datacenter")
+        if datacenter is None:
+            raise ValueError("server must be supplied"+"in configuration file.")
+        cluster = configuration._config_value("vmware", "cluster")
+        if cluster is None:
+            raise ValueError("cluster name must be supplied in configuration file.")
+        resourcePool = configuration._config_value("vmware", "resourcePool")
+        if resourcePool is None:
+            raise ValueError("Resource Pool name must be supplied in configuration file")
+        clusters=self.server.get_clusters()
+            #print clusters
+        keycluster=self.find_key(clusters,cluster)
+           # print(keycluster)
+        resource_pools=self.server.get_resource_pools(keycluster)
+       # print(resource_pools)
+        resourcePool=self.find_key(resource_pools,resourcePool,True)
+       # print (resourcePool)
+        return resourcePool
 
 
  #               resource_pools=self.server.get_resource_pools()
