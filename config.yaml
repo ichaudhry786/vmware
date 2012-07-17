@@ -5,3 +5,7 @@ general:
 logging:
     destination: ~/.psphere/psphere.log
     level: INFO # DEBUG, INFO, etc
+vmware:
+    datacenter: ICS Cloud Datacenter 5
+    cluster: Development Cluster
+    resourcePool: Customs-Dev-vDC
